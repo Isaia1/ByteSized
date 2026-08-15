@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "ByteSized",
+    "slug": "ByteSized",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "bytesized",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F7F5",
+    "newArchEnabled": true,
+    "platforms": ["ios", "android"],
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F7F5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bytesized.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ByteSized needs camera access to scan food barcodes."
+      }
+    },
+    "android": {
+      "package": "com.bytesized.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["android.permission.CAMERA"],
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow ByteSized to access your camera to scan barcodes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
+  }
+}
