@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import {
   RouteProp,
@@ -12,12 +12,15 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
+import { BarcodeCamera } from '../components/BarcodeCamera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddLocalProductForm } from '../components/AddLocalProductForm';
 import { Card } from '../components/Card';
@@ -55,7 +58,9 @@ export function ScannerScreen() {
   const [tdee, setTdee] = useState<number | null>(null);
   const [mealCategory, setMealCategory] = useState<MealCategory | null>(null);
   const [logging, setLogging] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState('');
   const scanGeneration = useRef(0);
+  const isWeb = Platform.OS === 'web';
 
   const scanFrameSize = Math.min(width * 0.84, 320);
 
@@ -156,6 +161,13 @@ export function ScannerScreen() {
     setLoading(false);
     setProduct(null);
     setEditingNutrition(false);
+    setManualBarcode('');
+  };
+
+  const submitManualBarcode = () => {
+    const trimmed = manualBarcode.trim();
+    if (!trimmed || scanned || loading) return;
+    handleBarcodeScanned({ data: trimmed });
   };
 
   const handleSaveLocalProduct = async (saved: ScannedProduct) => {
@@ -194,7 +206,7 @@ export function ScannerScreen() {
     }
   };
 
-  if (!permission) {
+  if (!isWeb && !permission) {
     return (
       <Screen style={styles.centered}>
         <ActivityIndicator color={colors.accent} size="large" />
@@ -202,7 +214,7 @@ export function ScannerScreen() {
     );
   }
 
-  if (!permission.granted) {
+  if (!isWeb && !permission?.granted) {
     return (
       <Screen style={styles.centered}>
         <Text style={styles.permissionText}>Camera access is required to scan barcodes.</Text>
@@ -335,32 +347,11 @@ export function ScannerScreen() {
   return (
     <Screen fullBleed style={styles.container}>
       <View style={styles.cameraWrapper}>
-        {isFocused ? (
-          <CameraView
-            style={StyleSheet.absoluteFillObject}
-            facing="back"
-            barcodeScannerSettings={{
-              barcodeTypes: [
-                'ean13',
-                'ean8',
-                'upc_a',
-                'upc_e',
-                'itf14',
-                'code128',
-                'code39',
-                'code93',
-                'codabar',
-                'qr',
-                'pdf417',
-                'datamatrix',
-                'aztec',
-              ],
-            }}
-            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-          />
-        ) : (
-          <View style={StyleSheet.absoluteFillObject} />
-        )}
+        <BarcodeCamera
+          active={isFocused}
+          scanned={scanned}
+          onBarcodeScanned={handleBarcodeScanned}
+        />
 
         <View style={[styles.topBar, { paddingTop: insets.top + spacing.sm }]}>
           <Pressable style={styles.backButton} onPress={handleChangeMeal} hitSlop={12}>
@@ -396,6 +387,28 @@ export function ScannerScreen() {
           <Text style={styles.bottomHintText}>
             Nutrition is filled in automatically. Save to see how much to eat.
           </Text>
+          {isWeb ? (
+            <View style={styles.manualEntry}>
+              <TextInput
+                value={manualBarcode}
+                onChangeText={setManualBarcode}
+                placeholder="Or type barcode number"
+                placeholderTextColor="rgba(255,255,255,0.55)"
+                keyboardType="number-pad"
+                returnKeyType="search"
+                onSubmitEditing={submitManualBarcode}
+                style={styles.manualInput}
+                editable={!scanned && !loading}
+              />
+              <Pressable
+                style={[styles.manualButton, (scanned || loading) && styles.buttonDisabled]}
+                onPress={submitManualBarcode}
+                disabled={scanned || loading}
+              >
+                <Text style={styles.manualButtonText}>Look up</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </View>
     </Screen>
@@ -514,6 +527,37 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     ...typography.caption,
     textAlign: 'center',
+  },
+  manualEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    width: '100%',
+  },
+  manualInput: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    color: colors.white,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  manualButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 12,
+    minHeight: 46,
+    justifyContent: 'center',
+  },
+  manualButtonText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: '700',
   },
   resultScroll: { flex: 1, width: '100%' },
   mealBadge: {

@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#F4F7F5",
     "newArchEnabled": true,
-    "platforms": ["ios", "android"],
+    "platforms": ["ios", "android", "web"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -32,6 +32,12 @@
       },
       "permissions": ["android.permission.CAMERA"],
       "softwareKeyboardLayoutMode": "resize"
+    },
+    "web": {
+      "favicon": "./assets/icon.png",
+      "bundler": "metro",
+      "output": "single",
+      "backgroundColor": "#F4F7F5"
     },
     "plugins": [
       [
