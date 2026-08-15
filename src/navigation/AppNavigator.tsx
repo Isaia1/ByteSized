@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TAB_BAR_BASE_HEIGHT } from '../constants/layout';
 import { colors, radii, shadows } from '../constants/theme';
@@ -22,6 +22,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 export function AppNavigator() {
   const insets = useSafeAreaInsets();
   const tabBarHeight = TAB_BAR_BASE_HEIGHT + insets.bottom;
+  const isWeb = Platform.OS === 'web';
 
   return (
     <Tab.Navigator
@@ -34,7 +35,8 @@ export function AppNavigator() {
           borderTopWidth: StyleSheet.hairlineWidth,
           height: tabBarHeight,
           paddingTop: 6,
-          paddingBottom: insets.bottom,
+          paddingBottom: isWeb ? Math.max(insets.bottom, 8) : insets.bottom,
+          ...(isWeb ? { position: 'relative' as const } : {}),
           ...shadows.sm,
         },
         tabBarItemStyle: {
